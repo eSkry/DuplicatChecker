@@ -15,8 +15,6 @@
 #include <vector>
 #include <map>
 
-#include "duplicatfilepair.h"
-
 /**
  * @brief The DuplicatFinder class - Класс реализующий поиск файлов дубликатов
  */
@@ -29,6 +27,13 @@ public:
      * @param parent
      */
     explicit DuplicatFinder(QObject *parent = nullptr);
+
+signals:
+
+    /**
+     * @brief equalFiles
+     */
+    void equalFiles(const QPair<QFileInfo, QFileInfo>);
 
 public slots:
 
@@ -88,11 +93,8 @@ private:
 
     // Папки для проверки
     QString m_Dir1, m_Dir2;
-
     int m_ignoreFilesLess;
-
     QCryptographicHash::Algorithm m_hashAlgo;
-
     const long BLOCK_SIZE = 8192;
 };
 

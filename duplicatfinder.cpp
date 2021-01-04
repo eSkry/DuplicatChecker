@@ -43,14 +43,15 @@ void DuplicatFinder::checkDuplicates() {
         }
     }
 
-    QVector<QPair<QFileInfo, QFileInfo>> l_equalFiles;
+//    QVector<QPair<QFileInfo, QFileInfo>> l_equalFiles;
     QByteArray l_hash1, l_hash2;
     for (auto it = compareCandidats.begin(); it != compareCandidats.end(); it++) {
         l_hash1 = getHashFile(it->first.filePath());
         l_hash2 = getHashFile(it->second.filePath());
 
         if (l_hash1 == l_hash2) {
-            l_equalFiles.append(*it);
+//            l_equalFiles.append(*it);
+            emit equalFiles(*it);
             qDebug() << QString(" |-- Candidats: %1 <== ==> %2").arg(it->first.filePath()).arg(it->second.filePath());
         }
     }
