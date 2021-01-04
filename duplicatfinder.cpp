@@ -2,7 +2,7 @@
 
 DuplicatFinder::DuplicatFinder(QObject *parent) : QObject(parent) {
     qDebug() << " [M] DuplicatFinder::DuplicatFinder";
-    m_ignoreFilesLess = 5;
+    m_ignoreFilesLess = 5 * 1024;
     m_hashAlgo = QCryptographicHash::Md5;
 }
 
