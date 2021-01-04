@@ -61,6 +61,13 @@ public slots:
      */
     void chancheHashAlgorithm(const QString& a_hashAlgoName);
 
+    /**
+     * @brief getFileListOnDirectory - Пробегает по указанной директории и по поддиректориям записывая путь и размер файла
+     * @param a_directoryPath
+     * @param a_result - В данный параметр будет записываться результат работы функции
+     */
+    void getFileListOnDirectory(const QString& a_directoryPath, QVector<QFileInfo>& a_result);
+
 private:
 
     /**
@@ -72,12 +79,21 @@ private:
      */
     bool isEqualsFiles(const QString& a_file1, const QString &a_file2);
 
+    /**
+     * @brief getHashFile
+     * @param a_filePath
+     * @return
+     */
+    QByteArray getHashFile(const QString& a_filePath);
+
     // Папки для проверки
     QString m_Dir1, m_Dir2;
 
     int m_ignoreFilesLess;
 
     QCryptographicHash::Algorithm m_hashAlgo;
+
+    const long BLOCK_SIZE = 8192;
 };
 
 #endif // DUPLICATFINDER_H

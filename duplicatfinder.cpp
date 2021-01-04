@@ -14,45 +14,44 @@ void DuplicatFinder::checkDuplicates() {
         return;
     }
 
-    QDirIterator it1(m_Dir1, QStringList(),  QDir::Files, QDirIterator::Subdirectories);
+    const int RESERVE_FILE_COUNT = 1000;
+    const bool IS_SINGLE_FOLDER = m_Dir1 == m_Dir2;
 
-    QFileInfo l_FileInfo;
+    QVector<QFileInfo> l_FilesSource, l_FilesTarget;
+    l_FilesSource.reserve(RESERVE_FILE_COUNT);
+    l_FilesTarget.reserve(RESERVE_FILE_COUNT);
 
-    std::map<QString, qint64> l_FileList;
-    while (it1.hasNext()) {
-        l_FileInfo.setFile(it1.next());
-        if (l_FileInfo.size() <= m_ignoreFilesLess)
-            continue;
-        l_FileList.insert(std::make_pair(l_FileInfo.filePath(), l_FileInfo.size()));
+    getFileListOnDirectory(m_Dir1, l_FilesSource);
+    if (!IS_SINGLE_FOLDER) {
+        getFileListOnDirectory(m_Dir2, l_FilesTarget);
     }
 
-    typedef QVector<QPair<QString, QString>> CandidatPairList;
-    CandidatPairList l_checkCandidats;
+    QVector<QFileInfo>& l_targetAlias = IS_SINGLE_FOLDER ? l_FilesSource : l_FilesTarget;
 
-    auto findAllByValue = [&l_FileList](qint64 a_findValue) {
-        QVector<QString> temp;
-        temp.reserve(100);
+    QVector<QPair<QFileInfo, QFileInfo>> compareCandidats;
+    compareCandidats.reserve(RESERVE_FILE_COUNT);
 
-        for (auto it = l_FileList.begin(); it != l_FileList.end(); it++) {
-            if (it->second == a_findValue) {
-                temp.push_back(it->first);
+    for (auto s_it = l_FilesSource.begin(); s_it != l_FilesSource.end(); s_it++) {
+        for (auto t_it = l_targetAlias.begin(); t_it != l_targetAlias.end(); t_it++) {
+
+            if (s_it->size() == t_it->size()) {
+                if (IS_SINGLE_FOLDER && s_it->filePath() == t_it->filePath())
+                    continue;
+
+                compareCandidats.append(qMakePair(*s_it, *t_it));
             }
         }
-        return temp;
-    };
+    }
 
-    QDirIterator targetIt(m_Dir2, QStringList(), QDir::Files, QDirIterator::Subdirectories);
-    while (targetIt.hasNext()) {
-        l_FileInfo.setFile(targetIt.next());
-        qint64 l_FileSize = l_FileInfo.size();
+    QVector<QPair<QFileInfo, QFileInfo>> l_equalFiles;
+    QByteArray l_hash1, l_hash2;
+    for (auto it = compareCandidats.begin(); it != compareCandidats.end(); it++) {
+        l_hash1 = getHashFile(it->first.filePath());
+        l_hash2 = getHashFile(it->second.filePath());
 
-        if (l_FileSize <= m_ignoreFilesLess)
-            continue;
-
-        auto tempCandidatPaths = findAllByValue(l_FileSize);
-        for (auto it = tempCandidatPaths.begin(); it != tempCandidatPaths.end(); it++) {
-            l_checkCandidats.append({l_FileInfo.filePath(), *it});
-            qDebug() << QString(" |-- Candidats: %1 <== ==> %2").arg(l_FileInfo.filePath()).arg(*it);
+        if (l_hash1 == l_hash2) {
+            l_equalFiles.append(*it);
+            qDebug() << QString(" |-- Candidats: %1 <== ==> %2").arg(it->first.filePath()).arg(it->second.filePath());
         }
     }
 
@@ -83,17 +82,54 @@ void DuplicatFinder::chancheHashAlgorithm(const QString &a_hashAlgoName) {
     }
 }
 
-bool DuplicatFinder::isEqualsFiles(const QString &a_file1, const QString &a_file2) {
+void DuplicatFinder::getFileListOnDirectory(const QString &a_directoryPath, QVector<QFileInfo> &a_result) {
+    qDebug() << " [M] DuplicatFinder::getFileListOnDirectory";
+    QDirIterator l_iter(a_directoryPath, QStringList(),  QDir::Files, QDirIterator::Subdirectories);
+    QFileInfo l_fInfo;
+
+    while (l_iter.hasNext()) {
+        l_fInfo.setFile(l_iter.next());
+
+        if (l_fInfo.size() <= m_ignoreFilesLess)
+            continue;
+
+        a_result.append(l_fInfo);
+    }
+}
+
+bool DuplicatFinder::isEqualsFiles(const QString &a_file1, const QString &a_file2) { // TODO: А нужен ли он теперь?
     qDebug() << " [S] DuplicatFinder::isEqualsFiles";
     QCryptographicHash l_hash(m_hashAlgo);
 
+    QByteArray l_hash1 = getHashFile(a_file1);
+    QByteArray l_hash2 = getHashFile(a_file2);
 
-    {
-        QFile file(a_file1);
-        file.open(QFile::ReadOnly);
+    if (l_hash1 == l_hash2) {
+        return true;
     }
 
+    return false;
 }
+
+QByteArray DuplicatFinder::getHashFile(const QString &a_filePath) {
+    qDebug() << " [M] DuplicatFinder::getHashFile " << a_filePath;
+    QCryptographicHash l_hash(m_hashAlgo);
+
+    QFile l_file(a_filePath);
+    l_file.open(QFile::ReadOnly);
+
+    while (!l_file.atEnd()){
+        l_hash.addData(l_file.read(BLOCK_SIZE));
+    }
+
+    return l_hash.result();
+}
+
+
+
+
+
+
 
 
 
