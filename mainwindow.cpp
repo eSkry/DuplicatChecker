@@ -33,6 +33,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->cbb_hashAlgo, &QComboBox::currentTextChanged, m_df, &DuplicatFinder::chancheHashAlgorithm);
 
     connect(this, &MainWindow::startFind, m_df, &DuplicatFinder::checkDuplicates);
+
+    connect(m_df, &DuplicatFinder::equalFiles, this, &MainWindow::addEqualFilePair, Qt::ConnectionType::BlockingQueuedConnection);
+
+    setupUi();
 }
 
 MainWindow::~MainWindow() {
@@ -52,11 +56,6 @@ void MainWindow::closeEvent(QCloseEvent *a_event) {
 
     QMainWindow::closeEvent(a_event);
 }
-
-/* Задачи:
- * №3 реализовать бинарную проверку файлов на идентичность
- * №4 Реализовать проверку файлов по MD5
- */
 
 void MainWindow::findDuplicates() {
     qDebug() << " [S] MainWindow::findDuplicates";
@@ -83,6 +82,45 @@ void MainWindow::findDuplicates() {
 
 void MainWindow::clearResult() {
     qDebug() << " [S] MainWindow::clearResult";
-    // TODO: do it
+    ui->line_duplicatCount->setText("0");
+
+    ui->table_result->clear();
+    for (int i = ui->table_result->rowCount(); i >= 0; i--) {
+        ui->table_result->removeRow(i);
+    }
+    setupUi();
 }
+
+void MainWindow::addEqualFilePair(QPair<QFileInfo, QFileInfo> a_filesPair) {
+    qDebug() << " [S] MainWindow::addEqualFilePair";
+    const int LAST_ROW = ui->table_result->rowCount();
+    ui->table_result->insertRow(LAST_ROW);
+
+    ui->table_result->setItem(LAST_ROW, 0, new QTableWidgetItem(a_filesPair.first.fileName()));
+    ui->table_result->setItem(LAST_ROW, 1, new QTableWidgetItem(a_filesPair.first.filePath()));
+    ui->table_result->setItem(LAST_ROW, 2, new QTableWidgetItem(a_filesPair.second.fileName()));
+    ui->table_result->setItem(LAST_ROW, 3, new QTableWidgetItem(a_filesPair.second.filePath()));
+    ui->table_result->setItem(LAST_ROW, 4, new QTableWidgetItem(a_filesPair.second.size() / 1024));
+
+    ui->line_duplicatCount->setText(QString::number(LAST_ROW + 1));
+}
+
+void MainWindow::setupUi() {
+    qDebug() << " [M] MainWindow::setupUi";
+
+    QStringList l_columnNames;
+    l_columnNames << "Source Name" << "Source path"
+                  << "Target Name" << "Target path" << "Files size";
+
+    ui->table_result->setShowGrid(true);
+    ui->table_result->setColumnCount(5);
+    ui->table_result->setHorizontalHeaderLabels(l_columnNames);
+    ui->table_result->horizontalHeader()->setStretchLastSection(true);
+    ui->table_result->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->table_result->setSelectionBehavior(QAbstractItemView::SelectRows);
+}
+
+
+
+
 

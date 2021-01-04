@@ -17,10 +17,18 @@ QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
 
+/**
+ * @brief The MainWindow class
+ */
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+
+    /**
+     * @brief MainWindow
+     * @param parent
+     */
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -28,6 +36,9 @@ public:
 
 signals:
 
+    /**
+     * @brief startFind
+     */
     void startFind();
 
 private slots:
@@ -44,7 +55,19 @@ private slots:
      */
     void clearResult();
 
+    /**
+     * @brief addEqualFilePair
+     * @param a_filesPair
+     */
+    void addEqualFilePair(QPair<QFileInfo, QFileInfo> a_filesPair);
+
 private:
+
+    /**
+     * @brief setupUi - Настройка UI
+     */
+    void setupUi();
+
     Ui::MainWindow *ui;
     DuplicatFinder *m_df;
     QThread *m_workThread;
