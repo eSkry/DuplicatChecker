@@ -21,7 +21,6 @@ SOURCES += \
     mainwindow.cpp
 
 HEADERS += \
-    duplicatfilepair.h \
     duplicatfinder.h \
     mainwindow.h
 
