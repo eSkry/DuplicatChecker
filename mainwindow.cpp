@@ -100,7 +100,8 @@ void MainWindow::addEqualFilePair(QPair<QFileInfo, QFileInfo> a_filesPair) {
     ui->table_result->setItem(LAST_ROW, 1, new QTableWidgetItem(a_filesPair.first.filePath()));
     ui->table_result->setItem(LAST_ROW, 2, new QTableWidgetItem(a_filesPair.second.fileName()));
     ui->table_result->setItem(LAST_ROW, 3, new QTableWidgetItem(a_filesPair.second.filePath()));
-    ui->table_result->setItem(LAST_ROW, 4, new QTableWidgetItem(a_filesPair.second.size() / 1024));
+    ui->table_result->setItem(LAST_ROW, 4, new QTableWidgetItem(tr("%1 KB")
+                                                                .arg(int((a_filesPair.first.size() + 1023) / 1024))));
 
     ui->line_duplicatCount->setText(QString::number(LAST_ROW + 1));
 }
